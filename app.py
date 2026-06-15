@@ -535,24 +535,33 @@ def main():
     display_cols = ["account_id", "risk_score", "risk_category", "pred_label",
                     "sweep_ratio", "drawdown_score", "credit_debit_ratio",
                     "community_risk_score", "transaction_velocity", "govt_alert_flag"]
+    table_df = filtered_df[display_cols].rename(columns={
+        "account_id":           "Account ID",
+        "risk_score":           "Risk Score",
+        "risk_category":        "Category",
+        "pred_label":           "Prediction",
+        "sweep_ratio":          "Sweep Ratio",
+        "drawdown_score":       "Drawdown",
+        "credit_debit_ratio":   "CR/DR Ratio",
+        "community_risk_score": "Community Risk",
+        "transaction_velocity": "Tx Velocity",
+        "govt_alert_flag":      "Gov't Alert",
+    }).copy()
+    # Round all float columns to 4 dp for clean display
+    for col in ["Risk Score", "Sweep Ratio", "Drawdown", "CR/DR Ratio", "Community Risk", "Tx Velocity"]:
+        table_df[col] = table_df[col].round(4)
     st.dataframe(
-        filtered_df[display_cols]
-        .rename(columns={
-            "account_id":           "Account ID",
-            "risk_score":           "Risk Score",
-            "risk_category":        "Category",
-            "pred_label":           "Prediction",
-            "sweep_ratio":          "Sweep Ratio",
-            "drawdown_score":       "Drawdown",
-            "credit_debit_ratio":   "CR/DR Ratio",
-            "community_risk_score": "Community Risk",
-            "transaction_velocity": "Tx Velocity",
-            "govt_alert_flag":      "Gov't Alert",
-        })
-        .style.background_gradient(subset=["Risk Score"], cmap="RdYlGn_r")
-        .format({"Risk Score": "{:.4f}"}),
+        table_df,
         use_container_width=True,
         height=320,
+        column_config={
+            "Risk Score": st.column_config.ProgressColumn(
+                "Risk Score",
+                min_value=0.0,
+                max_value=1.0,
+                format="%.4f",
+            ),
+        },
     )
 
     # ── Account Search & Detail ───────────────────────────────
